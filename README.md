@@ -162,6 +162,80 @@ The model classifies text into the following categories:
 - **Pipeline**: Vectorizer → Classifier (scikit-learn Pipeline)
 - **Serialization**: joblib pickle format
 
+## Why Does the Model Give Wrong Answers Sometimes?
+
+You might notice that when you test the model with different words, sometimes it gives correct answers and sometimes wrong ones. Here's why:
+
+### The Problem: Tiny Training Data
+
+This model was trained on **only 5 sentences**:
+
+```
+"hi"                        → greeting
+"hello"                     → greeting
+"how to reset password"     → question
+"cancel my subscription"    → complaint
+"great service"             → praise
+```
+
+### Think of it Like a Student Who Only Studied 5 Flashcards
+
+Imagine a student who only studied these 5 flashcards for an exam. Now the exam asks:
+
+| You Ask | What the Model Knows | Result |
+|---------|---------------------|--------|
+| "hello" | Seen this exact word! | Correct |
+| "hi there" | Knows "hi" | Probably correct |
+| "what" | Never seen this word | Random guess |
+| "help me" | Never seen these words | Random guess |
+| "cancel order" | Knows "cancel" | Probably correct |
+
+### How the Model "Thinks"
+
+```
+Step 1: Break text into words
+        "cancel my order" → ["cancel", "my", "order"]
+
+Step 2: Check which words it recognizes
+        "cancel" → YES, saw this in training (complaint)
+        "my"     → YES, saw this in training (complaint)
+        "order"  → NO, never seen this word
+
+Step 3: Make a guess based on known words
+        Result: "complaint" (because "cancel" and "my" appeared in complaint)
+```
+
+### Why "what" Gives Wrong Answers
+
+When you type `"what"`:
+- The model has **never seen the word "what"** during training
+- It has no information about this word
+- It makes a random guess based on default probabilities
+- The answer will likely be wrong or random
+
+### The Golden Rule of Machine Learning
+
+> **A model is only as good as its training data.**
+
+| More Training Data | Better Predictions |
+|-------------------|-------------------|
+| 5 examples | Very poor (this project) |
+| 1,000 examples | Decent |
+| 100,000 examples | Good |
+| Millions of examples | Excellent (like production systems) |
+
+### This is a Learning Project
+
+This project is intentionally simple to demonstrate:
+1. How ML pipelines work
+2. How to train and save a model
+3. How to serve predictions via an API
+
+For a production system, you would need:
+- **Thousands of training examples** for each intent category
+- **Better algorithms** (like BERT, transformers)
+- **Regular retraining** with new data
+
 ## Dependencies
 
 See `requirements.txt`:
